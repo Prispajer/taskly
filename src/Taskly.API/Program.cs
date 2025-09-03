@@ -7,6 +7,8 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+var todoItems = app.MapGroup("/todoitems");
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
