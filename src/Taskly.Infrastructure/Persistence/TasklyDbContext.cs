@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Taskly.Domain.Entities;
+using Taskly.Domain.Todos;
 using Taskly.Infrastructure.Configurations;
 
 public class TasklyDbContext(DbContextOptions<TasklyDbContext> options) : DbContext(options)
