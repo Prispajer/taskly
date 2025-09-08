@@ -21,7 +21,7 @@ namespace Taskly.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Taskly.Domain.Entities.Todo", b =>
+            modelBuilder.Entity("Taskly.Domain.Todos.Todo", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

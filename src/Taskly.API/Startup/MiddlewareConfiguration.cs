@@ -7,7 +7,9 @@
         {
             app.UseSwagger();        // Enables Swagger JSON endpoint
             app.UseSwaggerUI();      // Enables Swagger UI for interactive docs
-            app.UseHttpsRedirection(); // Redirects HTTP requests to HTTPS
+            if (!app.Environment.IsDevelopment()) {
+                app.UseHttpsRedirection(); // Redirects HTTP requests to HTTPS
+            }
         }
     }
 }

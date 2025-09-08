@@ -9,20 +9,36 @@ postgres-down:
 	docker rm -f taskly-local-db
 
 add-migration:
-	 dotnet ef migrations add $(name) \
-        --project src/Taskly.Infrastructure \
-        --startup-project src/Taskly.API
+	dotnet ef migrations add "$(name)" \
+		--project src/Taskly.Infrastructure \
+		--startup-project src/Taskly.API
 
 update-db:
-	 dotnet ef database update \
+	dotnet ef database update \
 		--project src/Taskly.Infrastructure \
 		--startup-project src/Taskly.API
 
 run-app:
-	dotnet run --project Taskly.API
+	dotnet run --project src/Taskly.API
 
-build-debug:
-    dotnet build Taskly.API/Taskly.API.csproj -c Debug
+build:
+	dotnet build src/Taskly.API/Taskly.API.csproj -c Release
 
-build-release:
-    dotnet build Taskly.API/Taskly.API.csproj -c Release
+test:
+	dotnet test tests/Taskly.IntegrationTests/Taskly.IntegrationTests.csproj
+	dotnet test tests/Taskly.UnitTests/Taskly.Uni	tTests.csproj
+
+docker-build:
+	docker build -t taskly-api .
+
+docker-run:
+	docker run -p 5000:8080 taskly-api 
+
+docker-compose-up:
+	docker-compose up --build 
+
+docker-compose-down:
+	docker-compose down -v
+
+clean:
+	dotnet clean src/Taskly.API/Taskly.API.csproj

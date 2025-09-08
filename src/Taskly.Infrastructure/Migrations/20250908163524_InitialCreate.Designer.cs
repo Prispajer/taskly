@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Taskly.Infrastructure.Migrations
 {
     [DbContext(typeof(TasklyDbContext))]
-    [Migration("20250905202833_InitialCreate")]
+    [Migration("20250908163524_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -24,7 +24,7 @@ namespace Taskly.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Taskly.Domain.Entities.Todo", b =>
+            modelBuilder.Entity("Taskly.Domain.Todos.Todo", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
