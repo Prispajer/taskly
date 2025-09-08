@@ -1,24 +1,53 @@
-﻿namespace Taskly.API.Startup
+﻿using FluentValidation;
+using Taskly.API.Endpoints.Todos.CreateTodo;
+using Taskly.Application;
+using Tasky.Application.Abstractions.Messaging;
 
+namespace Taskly.API.Startup
 {
+    // Registers application services and dependencies
     public static class DependencyInjection
-    {   
+    {
         public static void RegisterServices(this WebApplicationBuilder builder)
         {
-            builder.RegisterDatabase();
-            builder.RegisterSwagger();
+            builder.Services
+                .RegisterDatabase(builder.Configuration) // EF Core setup
+                .RegisterSwagger()                      // Swagger setup
+                .RegisterHandlers();                    // CQRS handlers + validators
         }
 
-        private static void RegisterDatabase(this WebApplicationBuilder builder)
+        // Configures EF Core with PostgreSQL
+        private static IServiceCollection RegisterDatabase(this IServiceCollection services, IConfiguration configuration)
         {
-            builder.Services.AddDbContext<TasklyDbContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("ConnectionString")));
+            services.AddDbContext<TasklyDbContext>(options =>
+                options.UseNpgsql(configuration.GetConnectionString("ConnectionString")));
+            return services;
         }
 
-        private static void RegisterSwagger(this WebApplicationBuilder builder)
+        // Adds Swagger services for API documentation
+        private static IServiceCollection RegisterSwagger(this IServiceCollection services)
         {
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen();
+            return services;
+        }
+
+        // Registers CQRS handlers and validators using Scrutor
+        public static IServiceCollection RegisterHandlers(this IServiceCollection services)
+        {
+            services.Scan(scan => scan
+                .FromApplicationDependencies(assembly => assembly.FullName != null && assembly.FullName.StartsWith("Taskly"))
+                .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)), publicOnly: false)
+                    .AsImplementedInterfaces()
+                .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<>)), publicOnly: false)
+                    .AsImplementedInterfaces()
+                .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<,>)), publicOnly: false)
+                    .AsImplementedInterfaces()
+                .WithScopedLifetime()
+            );
+
+            services.AddValidatorsFromAssemblyContaining(typeof(ValidationMarker)); // FluentValidation setup
+            return services;
         }
     }
 }
