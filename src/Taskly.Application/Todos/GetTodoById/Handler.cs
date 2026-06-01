@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Taskly.SharedKernel;
-using Tasky.Application.Abstractions.Messaging;
+using Taskly.SharedKernel.Common;
+using Taskly.Application.Abstractions.Messaging;
 
 namespace Taskly.Application.Todos.GetTodoById
 {

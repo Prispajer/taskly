@@ -1,4 +1,4 @@
-﻿namespace Tasky.Application.Abstractions.Messaging
+﻿namespace Taskly.Application.Abstractions.Messaging
 {
     // Marker interface for commands without response
     public interface ICommand { }

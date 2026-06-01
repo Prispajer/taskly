@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Taskly.Application.Todos.GetIncomingTodo
+namespace Taskly.Application.Todos.GetIncomingTodos
 {
     // Validator for GetIncomingTodosCommand
     public sealed class GetIncomingTodosValidator : AbstractValidator<GetIncomingTodosQuery>

@@ -1,6 +1,6 @@
 ﻿using Taskly.Domain.Todos;
-using Taskly.SharedKernel;
-using Tasky.Application.Abstractions.Messaging;
+using Taskly.SharedKernel.Common;
+using Taskly.Application.Abstractions.Messaging;
 
 namespace Taskly.Application.Todos.CreateTodo
 {
@@ -10,27 +10,19 @@ namespace Taskly.Application.Todos.CreateTodo
     {
         public async Task<Result<Guid>> Handle(CreateTodoCommand command, CancellationToken cancellationToken)
         {
-            // Parse expiry date
-            if (!DateTime.TryParse(command.Expiry, out var expiryDate))
-                return Result.Failure<Guid>(Error.BadRequest("Todo.BadRequest", "Expiry date format is invalid"));
+            // Create todo from rich domain model
+            var todoItem = Todo.Create(command.Title, command.Description, command.Expiry);
 
-            // Validate expiry is not in the past
-            if (expiryDate < DateTime.UtcNow)
-                return Result.Failure<Guid>(Error.BadRequest("Todo.BadRequest", "Expiry date cannot be in the past"));
-
-            // Create new todo item
-            var todoItem = new Todo
+            if (!todoItem.IsSuccess)
             {
-                Title = command.Title,
-                Description = command.Description,
-                Expiry = expiryDate,
-            };
+                return Result.Failure<Guid>(todoItem.Error);
+            }
 
             // Save to database
-            context.Todos.Add(todoItem);
+            context.Todos.Add(todoItem.Value);
             await context.SaveChangesAsync(cancellationToken);
 
-            return Result.Success(todoItem.Id);
+            return Result.Success(todoItem.Value.Id);
         }
     }
 }

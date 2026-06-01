@@ -1,4 +1,4 @@
-﻿using Tasky.Application.Abstractions.Messaging;
+﻿using Taskly.Application.Abstractions.Messaging;
 
 namespace Taskly.Application.Todos.DeleteTodo
 {

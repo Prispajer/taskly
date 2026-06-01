@@ -1,4 +1,4 @@
-﻿namespace Taskly.Application.Todos.GetIncomingTodo
+﻿namespace Taskly.Application.Todos.GetIncomingTodos
 {
     // Enum for specifying incoming todo time range
     public enum IncomingTodoRange

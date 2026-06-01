@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Taskly.SharedKernel;
-using Tasky.Application.Abstractions.Messaging;
+using Taskly.SharedKernel.Common;
+using Taskly.Application.Abstractions.Messaging;
 
 namespace Taskly.Application.Todos.SetTodoPercentComplete
 {
@@ -23,13 +23,18 @@ namespace Taskly.Application.Todos.SetTodoPercentComplete
                     "Todo.NotFound",
                     $"The todo item with Id = {command.Id} was not found"));
             }
-
+            
             // Update PercentComplete
-            todo.PercentComplete = command.PercentComplete;
+            var updatedPercentComplete = todo.SetPercentComplete(command.PercentComplete);
+            
+            if (!updatedPercentComplete.IsSuccess)
+            {
+                return Result.Failure(updatedPercentComplete.Error);
+            }
 
             // Save changes
             await context.SaveChangesAsync(cancellationToken);
-
+            
             return Result.Success();
         }
     }

@@ -1,4 +1,4 @@
-﻿namespace Taskly.Application.Todos.GetIncomingTodo
+﻿namespace Taskly.Application.Todos.GetIncomingTodos
 {
     // DTO for returning todo item data
     public record TodoResponse

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Taskly.SharedKernel;
-using Tasky.Application.Abstractions.Messaging;
+using Taskly.SharedKernel.Common;
+using Taskly.Application.Abstractions.Messaging;
 
 namespace Taskly.Application.Todos.UpdateTodo
 {
@@ -23,9 +23,12 @@ namespace Taskly.Application.Todos.UpdateTodo
             }
 
             // Update fields
-            todoItem.Title = command.Title;
-            todoItem.Description = command.Description;
-            todoItem.Expiry = DateTime.Parse(command.Expiry);
+            var updatedResult = todoItem.Update(command.Title, command.Description, command.Expiry);
+
+            if (!updatedResult.IsSuccess)
+            {
+                return Result.Failure(updatedResult.Error);
+            }
 
             // Save changes
             await context.SaveChangesAsync(cancellationToken);

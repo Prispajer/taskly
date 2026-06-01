@@ -1,6 +1,6 @@
-﻿using Taskly.SharedKernel;
+﻿using Taskly.SharedKernel.Common;
 
-namespace Tasky.Application.Abstractions.Messaging
+namespace Taskly.Application.Abstractions.Messaging
 {
     // Handler for commands without response
     public interface ICommandHandler<in TCommand>

@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
-using Taskly.API.Endpoints.Todos.CreateTodo;
 using Taskly.Application;
-using Tasky.Application.Abstractions.Messaging;
+using Taskly.Application.Abstractions.Messaging;
 
 namespace Taskly.API.Startup
 {
@@ -33,7 +32,7 @@ namespace Taskly.API.Startup
         }
 
         // Registers CQRS handlers and validators using Scrutor
-        public static IServiceCollection RegisterHandlers(this IServiceCollection services)
+        private static IServiceCollection RegisterHandlers(this IServiceCollection services)
         {
             services.Scan(scan => scan
                 .FromApplicationDependencies(assembly => assembly.FullName != null && assembly.FullName.StartsWith("Taskly"))

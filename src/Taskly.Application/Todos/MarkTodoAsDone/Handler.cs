@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Taskly.Domain.Todos;
-using Taskly.SharedKernel;
-using Tasky.Application.Abstractions.Messaging;
+using Taskly.SharedKernel.Common;
+using Taskly.Application.Abstractions.Messaging;
 
 namespace Taskly.Application.Todos.MarkTodoAsDone
 {
@@ -24,8 +24,8 @@ namespace Taskly.Application.Todos.MarkTodoAsDone
             }
 
             // Mark as done
-            todoItem.PercentComplete = 100;
-
+            todoItem.MarkAsDone();
+            
             // Save changes
             await context.SaveChangesAsync(cancellationToken);
 
