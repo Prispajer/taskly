@@ -1,6 +1,13 @@
 ﻿using FluentValidation;
 using Taskly.Application;
+using Taskly.Application.Abstractions.Data;
 using Taskly.Application.Abstractions.Messaging;
+using Taskly.Domain.Interfaces;
+using Taskly.Domain.Providers;
+using Taskly.Infrastructure.Interceptors;
+using Taskly.Infrastructure.Persistence;
+using Taskly.Infrastructure.Persistence.Repositories;
+using Taskly.SharedKernel.Interfaces;
 
 namespace Taskly.API.Startup
 {
@@ -12,14 +19,19 @@ namespace Taskly.API.Startup
             builder.Services
                 .RegisterDatabase(builder.Configuration) // EF Core setup
                 .RegisterSwagger()                      // Swagger setup
-                .RegisterHandlers();                    // CQRS handlers + validators
+                .RegisterHandlers()                    // CQRS handlers + validators
+                .RegisterDependencies();              // Dependencies
         }
 
         // Configures EF Core with PostgreSQL
         private static IServiceCollection RegisterDatabase(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<TasklyDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("ConnectionString")));
+            services.AddDbContext<TasklyDbContext>((sp, options) =>
+            {
+                options.UseNpgsql(configuration.GetConnectionString("ConnectionString"));
+                var interceptor = sp.GetRequiredService<DomainEventPublishingInterceptor>();
+                options.AddInterceptors(interceptor);
+            });
             return services;
         }
 
@@ -46,6 +58,16 @@ namespace Taskly.API.Startup
             );
 
             services.AddValidatorsFromAssemblyContaining(typeof(ValidationMarker)); // FluentValidation setup
+            return services;
+        }
+
+        private static IServiceCollection RegisterDependencies(this IServiceCollection services)
+        {
+            services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+            services.AddScoped<ITodoRepository, TodoRepository>();
+            services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<TasklyDbContext>());
+            services.AddScoped<DomainEventPublishingInterceptor>();
+            
             return services;
         }
     }
