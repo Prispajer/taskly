@@ -1,7 +1,7 @@
-﻿namespace Taskly.SharedKernel.Interfaces;
+﻿using MediatR;
 
-public interface IDomainEvent
+namespace Taskly.SharedKernel.Interfaces;
+
+public interface IDomainEvent : INotification
 {
-    public Guid Id { get; init; }
-    public DateTime OccurredOn { get; init; }
 }

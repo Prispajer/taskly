@@ -32,7 +32,7 @@ namespace Taskly.Domain.Todos.Entities
 
             var todo = new Todo(Guid.NewGuid(), title, description, expiry, Percent.Zero);
             
-            todo.AddDomainEvent(new TaskCreatedEvent(todo.Id, todo.Expiry.Value));
+            todo.AddDomainEvent(new TaskCreatedDomainEvent(todo.Id, todo.Expiry.Value));
             
             return Result.Success(todo);
         }
@@ -46,7 +46,7 @@ namespace Taskly.Domain.Todos.Entities
             Description = description;
             Expiry = expiry;
 
-            AddDomainEvent(new UpdateTaskEvent(Id, Expiry.Value));
+            AddDomainEvent(new UpdateTaskDomainEvent(Id, Expiry.Value));
 
             return Result.Success();
         }
@@ -64,7 +64,7 @@ namespace Taskly.Domain.Todos.Entities
 
             PercentComplete = percentComplete;
             
-            AddDomainEvent(new SetPercentCompleteEvent(Id));
+            AddDomainEvent(new SetPercentCompleteDomainEvent(Id));
             
             return Result.Success();
         }
@@ -79,7 +79,7 @@ namespace Taskly.Domain.Todos.Entities
     
             PercentComplete = Percent.Completed;
             
-            AddDomainEvent(new SetPercentCompleteEvent(Id));
+            AddDomainEvent(new SetPercentCompleteDomainEvent(Id));
             
             return Result.Success();
         }

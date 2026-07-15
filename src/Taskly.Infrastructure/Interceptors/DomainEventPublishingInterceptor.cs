@@ -30,51 +30,31 @@ public class DomainEventPublishingInterceptor : SaveChangesInterceptor
 
         return await base.SavingChangesAsync(eventData, result, cancellationToken);
     }
-    
+
     private async Task PublishDomainEventsAsync(DbContext context, CancellationToken cancellationToken)
     {
-        // Find all aggregate roots with domain events
         var aggregateRoots = context.ChangeTracker.Entries<AggregateRoot<Guid>>()
-            .Where(e => e.Entity.DomainEvents.Any())
+            .Where(e => e.Entity.DomainEvents.Count > 0)
             .Select(e => e.Entity)
             .ToList();
 
         if (!aggregateRoots.Any()) return;
-
-        // Collect all domain events
+        
         var domainEvents = aggregateRoots
             .SelectMany(ar => ar.DomainEvents)
             .ToList();
-
-        // Publish each domain event
-        foreach (var domainEvent in domainEvents)
-        {
-            try
-            {
-                await _domainEventPublisher.PublishAsync(domainEvent, cancellationToken);
-                _logger.LogInformation("Successfully published domain event {EventType} with ID {EventId}",
-                    domainEvent.GetType().Name, domainEvent.Id);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to publish domain event {EventType} with ID {EventId}",
-                    domainEvent.GetType().Name, domainEvent.Id);
-
-                // Re-add events to aggregate if publishing fails
-                // This ensures events aren't lost if there's a publishing failure
-                foreach (var aggregateRoot in aggregateRoots)
-                {
-                    aggregateRoot.AddDomainEvent(domainEvent);
-                }
-
-                throw; // Re-throw to prevent saving if event publishing fails
-            }
-        }
         
-        // Clear events from aggregates before publishing to prevent duplicate publishing
+        _logger.LogInformation("Found {Count} events to send!", domainEvents.Count);
+
         foreach (var aggregateRoot in aggregateRoots)
         {
             aggregateRoot.ClearDomainEvents();
+        }
+
+        foreach (var domainEvent in domainEvents)
+        {
+            await _domainEventPublisher.PublishAsync(domainEvent, cancellationToken);
+            _logger.LogInformation("Successfully published {EventType}", domainEvent.GetType().Name);        
         }
     }
 }
