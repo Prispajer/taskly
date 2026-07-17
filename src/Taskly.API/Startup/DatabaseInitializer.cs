@@ -1,4 +1,6 @@
-﻿namespace Taskly.API.Startup
+﻿using Taskly.Infrastructure.Persistence;
+
+namespace Taskly.API.Startup
 {
     // Applies pending EF Core migrations at startup
     public static class DatabaseInitializer

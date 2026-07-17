@@ -8,9 +8,6 @@ namespace Taskly.API.Endpoints.Todos.DeleteTodo
     // Endpoint for deleting a Todo item by its ID
     public sealed class DeleteTodoEndpoint : IEndpoint
     {
-        public async Task GetFromJsonAsync(HttpClient httpClient){
-            var items = httpClient.GetFromJsonAsync<List<string>>("");
-        }
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
             app.MapDelete("todos/{id:guid}", async (

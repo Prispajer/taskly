@@ -1,7 +1,8 @@
 ﻿using FluentValidation;
 using Taskly.API.Infrastructure;
 using Taskly.Application.Todos.GetTodos;
-using Tasky.Application.Abstractions.Messaging;
+using Taskly.Application.Abstractions.Messaging;
+using Taskly.Application.Todos.Common;
 
 namespace Taskly.API.Endpoints.Todos.GetTodos
 {

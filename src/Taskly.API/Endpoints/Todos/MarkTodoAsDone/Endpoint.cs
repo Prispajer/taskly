@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using Taskly.API.Infrastructure;
 using Taskly.Application.Todos.MarkTodoAsDone;
-using Tasky.Application.Abstractions.Messaging;
+using Taskly.Application.Abstractions.Messaging;
 
 namespace Taskly.API.Endpoints.Todos.MarkTodoAsDone
 {
