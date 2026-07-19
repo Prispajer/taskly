@@ -1,4 +1,4 @@
-﻿using Taskly.Domain.Exceptions;
+﻿using Taskly.SharedKernel.Common;
 
 namespace Taskly.Domain.Todos.ValueObjects;
 
@@ -11,10 +11,12 @@ public record Percent
     
     private Percent(int value) => Value = value;
 
-    public static Percent Create(int value)
+    public static Result<Percent> Create(int value)
     {
-        if (value is < 0 or > 100) throw new DomainException("Percent value must be between 0 and 100");
+        if (value is < 0 or > 100)
+            return Result.Failure<Percent>(
+                Error.BadRequest("Percent.OutOfRange", "Percent value must be between 0 and 100"));
         
-        return new Percent(value);
+        return Result.Success(new Percent(value));
     }
 }

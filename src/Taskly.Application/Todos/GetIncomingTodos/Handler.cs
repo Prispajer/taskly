@@ -1,55 +1,29 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Taskly.Application.Abstractions.Data;
 using Taskly.SharedKernel.Common;
 using Taskly.Application.Abstractions.Messaging;
+using Taskly.Application.Todos.Common;
+using Taskly.Application.Todos.Extensions;
 
 namespace Taskly.Application.Todos.GetIncomingTodos
 {
     // Handles GetIncomingTodosCommand
-    public class GetIncomingTodoHandler(TasklyDbContext context)
+    public class GetIncomingTodoHandler(ITodoRepository repository, IQueryExecutor queryExecutor, TodoDateRangeCalculator todoDateRangeCalculator)
         : IQueryHandler<GetIncomingTodosQuery, List<TodoResponse>>
     {
         public async Task<Result<List<TodoResponse>>> Handle(GetIncomingTodosQuery query, CancellationToken cancellationToken)
         {
-            // Normalize current date
-            var now = DateTime.SpecifyKind(DateTime.Now.Date, DateTimeKind.Unspecified);
-            DateTime from;
-            DateTime to;
+            // Calculate data for incoming todos
+            var (from, to) = todoDateRangeCalculator.Calculate(query.Range);
 
-            // Determine date range based on command
-            switch (query.Range)
-            {
-                case IncomingTodoRange.Today:
-                    from = now;
-                    to = now.AddDays(1);
-                    break;
-                case IncomingTodoRange.NextDay:
-                    from = now.AddDays(1);
-                    to = now.AddDays(2);
-                    break;
-                case IncomingTodoRange.CurrentWeek:
-                    from = now;
-                    to = now.AddDays(((int)DayOfWeek.Sunday - (int)now.DayOfWeek + 7) % 7);
-                    break;
-                default:
-                    from = now;
-                    to = now.AddDays(1);
-                    break;
-            }
-
+            // Query todos within range provided by statement
+            var queryable = repository.GetQueryable()
+                .Where(x => x.Expiry.Value >= from && x.Expiry.Value < to)
+                .OrderBy(x => x.Expiry.Value)
+                .ToResponse(); 
+            
             // Fetch todos within range and map to response DTO
-            List<TodoResponse> todos = await context.Todos
-                .Where(t => t.Expiry >= from && t.Expiry < to)
-                .OrderBy(t => t.Expiry)
-                .Select(t => new TodoResponse
-                {
-                    Id = t.Id,
-                    Title = t.Title,
-                    Description = t.Description,
-                    Expiry = t.Expiry,
-                    PercentComplete = t.PercentComplete,
-                })
-                .ToListAsync(cancellationToken);
-
+            var todos = await queryExecutor.ExecuteListAsync(queryable, cancellationToken);
+                
             return Result.Success(todos);
         }
     }

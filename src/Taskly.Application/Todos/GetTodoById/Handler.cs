@@ -1,27 +1,21 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Taskly.Application.Abstractions.Data;
 using Taskly.SharedKernel.Common;
 using Taskly.Application.Abstractions.Messaging;
+using Taskly.Application.Todos.Common;
+using Taskly.Application.Todos.Extensions;
 
 namespace Taskly.Application.Todos.GetTodoById
 {
     // Handles GetTodoByIdQuery
-    public sealed class GetTodoByIdQueryHandler(TasklyDbContext context)
+    public sealed class GetTodoByIdQueryHandler(ITodoRepository repository, IQueryExecutor queryExecutor)
         : IQueryHandler<GetTodoByIdQuery, TodoResponse>
     {
         public async Task<Result<TodoResponse>> Handle(GetTodoByIdQuery query, CancellationToken cancellationToken)
         {
-            // Fetch todo item by ID and map to response DTO
-            var todoItem = await context.Todos
-                .Where(t => t.Id == query.Id)
-                .Select(t => new TodoResponse
-                {
-                    Id = t.Id,
-                    Title = t.Title,
-                    Description = t.Description,
-                    Expiry = t.Expiry,
-                    PercentComplete = t.PercentComplete
-                })
-                .SingleOrDefaultAsync(cancellationToken);
+            // Fetch todo item by ID with EF Core projection to DTO
+            var todoItem = await queryExecutor.ExecuteSingleOrDefaultAsync(
+                repository.GetQueryable().Where(x => x.Id == query.Id).ToResponse(),
+                cancellationToken);
 
             // Return result based on presence
             return todoItem is null
