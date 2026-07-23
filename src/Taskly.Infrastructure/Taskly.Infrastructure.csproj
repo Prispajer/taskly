@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\Taskly.Application\Taskly.Application.csproj" />
     <ProjectReference Include="..\Taskly.Domain\Taskly.Domain.csproj" />
+    <ProjectReference Include="..\Taskly.SharedKernel\Taskly.SharedKernel.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
