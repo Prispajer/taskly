@@ -1,11 +1,19 @@
 ﻿using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Taskly.Application.Abstractions.Data;
 using Taskly.Application.Todos.MarkTodoAsDone;
-using Taskly.Domain.Todos;
+using Taskly.Infrastructure.Persistence;
+using Taskly.Infrastructure.Persistence.Data;
+using Taskly.Infrastructure.Persistence.Repositories;
+using Taskly.Domain.Todos.Entities;
+using Taskly.Domain.Todos.ValueObjects;
 
 public class MarkTodoAsDoneCommandHandlerTests
 {
     private readonly TasklyDbContext _dbContext;
+    private readonly ITodoRepository _repository;
+    private readonly IQueryExecutor _queryExecutor;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly MarkTodoAsDoneCommandHandler _handler;
 
     public MarkTodoAsDoneCommandHandlerTests()
@@ -16,32 +24,34 @@ public class MarkTodoAsDoneCommandHandlerTests
             .Options;
 
         _dbContext = new TasklyDbContext(options);
-        _handler = new MarkTodoAsDoneCommandHandler(_dbContext);
+        _repository = new TodoRepository(_dbContext);
+        _queryExecutor = new QueryExecutor();
+        _unitOfWork = _dbContext;
+        _handler = new MarkTodoAsDoneCommandHandler(_repository, _queryExecutor, _unitOfWork);
     }
 
     [Fact]
     public async Task Should_Mark_Todo_As_Done_When_It_Exists()
     {
-        // Arrange: Add a todo to the database
-        var todo = new Todo
-        {
-            Title = "Test",
-            Description = "Desc",
-            Expiry = DateTime.UtcNow.AddDays(1),
-            PercentComplete = 0
-        };
-        _dbContext.Todos.Add(todo);
+        // Arrange: Add a todo and set some progress first (MarkAsDone rejects 0%)
+        var todo = Todo.Create("Test", "Desc", Expiry.Create(DateTime.UtcNow.AddDays(1)));
+        
+        _repository.Add(todo.Value);
         await _dbContext.SaveChangesAsync();
 
-        var command = new MarkTodoAsDoneCommand(todo.Id);
+        // Set progress > 0% so MarkAsDone can succeed
+        todo.Value.SetPercentComplete(Percent.Create(50).Value);
+        await _dbContext.SaveChangesAsync();
+
+        var command = new MarkTodoAsDoneCommand(todo.Value.Id);
 
         // Act: Execute the handler
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert: Todo should be marked as 100% complete
         result.IsSuccess.Should().BeTrue();
-        var updated = await _dbContext.Todos.FindAsync(todo.Id);
-        updated!.PercentComplete.Should().Be(100);
+        var updated = await _dbContext.Todos.FindAsync(todo.Value.Id);
+        updated!.PercentComplete.Value.Should().Be(100);
     }
 
     [Fact]

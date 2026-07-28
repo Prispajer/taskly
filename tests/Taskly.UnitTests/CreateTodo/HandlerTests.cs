@@ -1,11 +1,17 @@
 ﻿using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Taskly.Application.Abstractions.Data;
 using Taskly.Application.Todos.CreateTodo;
+using Taskly.Infrastructure.Providers;
+using Taskly.Infrastructure.Persistence;
+using Taskly.Infrastructure.Persistence.Repositories;
 
 public class CreateTodoCommandHandlerTests
 {
     private readonly CreateTodoCommandHandler _handler;
     private readonly TasklyDbContext _dbContext;
+    private readonly ITodoRepository _repository;
+
 
     public CreateTodoCommandHandlerTests()
     {
@@ -15,7 +21,9 @@ public class CreateTodoCommandHandlerTests
             .Options;
 
         _dbContext = new TasklyDbContext(options);
-        _handler = new CreateTodoCommandHandler(_dbContext);
+        _repository = new TodoRepository(_dbContext);
+        _handler = new CreateTodoCommandHandler(_repository, _dbContext, new DateTimeProvider());
+
     }
 
     [Fact]
