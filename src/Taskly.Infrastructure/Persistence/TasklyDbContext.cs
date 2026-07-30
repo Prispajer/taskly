@@ -1,18 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Taskly.Domain.Todos;
-using Taskly.Infrastructure.Configurations;
+using Taskly.Application.Abstractions.Data;
+using Taskly.Domain.Todos.Entities;
+using Taskly.Infrastructure.Configuration;
 
-public class TasklyDbContext(DbContextOptions<TasklyDbContext> options) : DbContext(options)
+namespace Taskly.Infrastructure.Persistence;
+public class TasklyDbContext(DbContextOptions<TasklyDbContext> options) : DbContext(options), IUnitOfWork
 {
     public DbSet<Todo> Todos { get; set; }
-
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         new TodoConfiguration().Configure(modelBuilder.Entity<Todo>());
-    }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        base.OnConfiguring(optionsBuilder);
     }
 }
